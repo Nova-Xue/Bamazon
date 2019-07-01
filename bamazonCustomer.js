@@ -8,6 +8,7 @@ var connection = mysql.createConnection({
     port : 3306,
     database : "bamazon"
 });
+var userId = Math.floor(Math.random()*100+1);
 console.log("Welcome to Bamazon");
 connection.query("select item_id, product_name, price from products",function(err,data){
     if (err) {
@@ -16,7 +17,7 @@ connection.query("select item_id, product_name, price from products",function(er
     let arr = [];
     console.log("Here are our products");
     for (let index = 0; index < data.length; index++) {
-        console.log(data[index].item_id +"|" +data[index].product_name +"|" +data[index].price);
+        console.log(data[index].item_id +"|" +data[index].product_name +"|" +data[index].price+"$");
         arr.push(data[index].item_id+"."+data[index].product_name);
         console.log("-----------------------------------------------");
         
@@ -48,9 +49,32 @@ connection.query("select item_id, product_name, price from products",function(er
                 if(quantity>0){
                     if(quantity>stock){
                         console.log("stock not enough");
-                        
                     }else{
                         //cart table
+                        //check chart 
+                        connection.query("select *from chart where user_id = ? and item_id = ?",[userId,buyId],function(err,data){
+                                if (data.length>0) {
+                                    //have the same item
+                                    connection.query("update chart set quantity = quantity + ? where user_id = ? and item_id = ? ",[quantity,userId,buyId],function(err,data){
+                                            if(data.affectedRows == 1) {
+                                                console.log("success");
+                                            }
+                                    });
+                                }else{
+                                    connection.query("insert into chart set ?",{
+                                        item_id : buyId,
+                                        quantity : quantity,
+                                        user_id : userId
+                                    },function(err,data){
+                                        if (err) {
+                                            console.log(err);
+                                        }
+                                        if (data.affectedRows ==1) {
+                                            console.log("success");
+                                        }
+                                    });
+                                }
+                        });
                         //products table
                         //use bamazon;update products set stock_quantity = stock_quantity-1 where item_id = 2;
                         connection.query("update products set stock_quantity = stock_quantity - ? where item_id = ?",[quantity,buyId],function (err,data) {
@@ -64,7 +88,6 @@ connection.query("select item_id, product_name, price from products",function(er
                     }
                 }else{
                     console.log("wrong input #");
-                    
                 }
             });
         });

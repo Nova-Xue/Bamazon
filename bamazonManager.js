@@ -24,16 +24,19 @@ function viewSale() {
     });
 }
 function viewLowInventory() {
+    
     connection.query("select *from products where stock_quantity<5", function (err, data) {
         if (err) {
             console.log(err);
 
         }
+        
         //data needs further format 
         if (data.length == 0) {
             console.log("everything enough");
 
         } else {
+            
             let dataArr = [["id", "name", "price", "quantity"]];
             for (let index = 0; index < data.length; index++) {
                 dataArr.push([data[index].item_id, data[index].product_name, data[index].price, data[index].stock_quantity]);
@@ -143,7 +146,7 @@ function main() {
         type: "list",
         name: "option",
         message: "Choose an option",
-        choices: ["View Products for Sale", "View Low Inventory", "Add to Inventory", "Add New Product", "quit"]
+        choices: ["View Products for Sale", "View Low Inventory(quantity less than 5)", "Add to Inventory", "Add New Product", "quit"]
     }).then(answer => {
         switch (answer.option) {
             case "View Products for Sale":
@@ -152,7 +155,7 @@ function main() {
             case "Add to Inventory":
                 addInventory();
                 break;
-            case "View Low Inventory (quantity less than 5)":
+            case "View Low Inventory(quantity less than 5)":
                 viewLowInventory();
                 break;
             case "Add New Product":

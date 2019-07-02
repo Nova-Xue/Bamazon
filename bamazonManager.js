@@ -16,6 +16,7 @@ function viewSale(){
         for (let index = 0; index < data.length; index++) {
             console.log(data[index]);
         }
+        main();
     });
 }
 function viewLowInventory(){
@@ -25,8 +26,61 @@ function viewLowInventory(){
             
         }
         //data needs further format 
-        console.log(data);
+        if(data.length==0){
+            console.log("everything enough");
+            
+        }else{
+            console.log(data);
+        }
+        main();
         
+    });
+}
+function addInventory(){
+    connection.query("select *from products",function(err,data){
+        if (err) {
+            console.log(err);
+            
+        }
+        let newArr = [];
+        for (let index = 0; index < data.length; index++) {
+            
+            newArr.push(data[index].item_id+"."+data[index].product_name+"||"+data[index].stock_quantity);
+
+        }
+        console.log(newArr);
+        
+
+        inquirer.prompt([{
+            type : "list",
+            name : "item",
+            message : "Choose an item to add",
+            choices : newArr
+        },{
+            type : "input",
+            name : "add",
+            message : "How many?",
+            default : 1
+        }]).then(answers=>{
+            if(parseInt(answers.add)== NaN || parseInt(answers.add)<=0){
+                console.log("wrong input");
+                addInventory();
+            }else{
+                let addId = answers.item.substring(0,answers.item.indexOf("."));
+                let addNum = parseInt(answers.add);
+                connection.query("update products set stock_quantity = stock_quantity + ? where item_id = ?",[addNum,addId],function(err,data){
+                    if (err) {
+                        console.log(err);
+                        
+                    }
+                    if(data.affectedRows == 1){
+                        console.log("add success");
+                        main();
+                    }
+                })
+                
+            }
+        });
     });
 }
 function main() {
@@ -39,19 +93,15 @@ function main() {
         switch (answer.option) {
             case "View Products for Sale":
                 viewSale();
-                main();
                 break;
             case "Add to Inventory":
                 addInventory();
-                main();
                 break;
             case "View Low Inventory":
                 viewLowInventory();
-                main();
                 break;
             case "Add New Product":
                 addNewItem();
-                main();
                 break;
             default:
                 connection.end();

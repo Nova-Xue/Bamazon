@@ -1,4 +1,5 @@
 var mysql = require("mysql");
+var table = require("table");
 require("dotenv").config();
 var inquirer = require("inquirer");
 var connection = mysql.createConnection({
@@ -8,6 +9,36 @@ var connection = mysql.createConnection({
     port: 3306,
     database: "bamazon"
 });
+function view(){
+//     select *,(sales.product_sales-departments.over_head_costs) as total_profit 
+// from 
+// departments 
+// inner join 
+// (select department_name,sum(department_name) as product_sales from products group by department_name) as sales
+// on sales.department_name = departments.department_name;
+var querySQL = "select *,(sales.product_sales-departments.over_head_costs) as total_profit from departments ";
+querySQL += "inner join "+"(select department_name,sum(department_name) as product_sales from products group by department_name) as sales ";
+querySQL += "on sales.department_name = departments.department_name;"
+    connection.query(querySQL,function(err,data){
+        if (err) {
+            console.log(err);
+            
+        }
+        //create a table to display the data from db
+        let newData = [
+            ["department_id","department_name","over_head_costs","product_sales","total_profit"]
+            
+        ];
+        for (let index = 0; index < data.length; index++) {
+            let row = [];
+            row.push(data[index].department_id,data[index].department_name,data[index].over_head_costs,data[index].product_sales,data[index].total_profit);
+            newData.push(row);
+        }
+        console.log(table.table(newData));
+        
+        main();
+    });
+}
 function addDepartment(){
     inquirer.prompt([{
         type : "input",

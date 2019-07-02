@@ -83,6 +83,53 @@ function addInventory(){
         });
     });
 }
+function addNewItem(){
+    inquirer.prompt([{
+        type : "input",
+        name : "name",
+        message : "Product name?"
+    },{
+        type : "input",
+        name : "department",
+        message : "Department?",
+
+    },{
+        type : "input",
+        name : "price",
+        message : "Price?",
+
+
+    },{
+        type : "input",
+        name : "quantity",
+        message : "How many?"
+    }]).then(answers=>{
+        //should have more validation
+        //don't want to do it 
+        if(answers.name != "" && answers.department != "" && answers.price != ""&& answers.quantity != ""){
+           //should check data base before insert 
+            connection.query("insert into products set ?",{
+                product_name : answers.name,
+                department_name : answers.department,
+                price : answers.price,
+                stock_quantity : answers.quantity
+            },function(err,data){
+                if (err) {
+                    console.log(err);
+                    
+                }
+              if (data.affectedRows ==1) {
+                  console.log("add item success");
+                  main();
+              }
+               
+            });
+        }else{
+            console.log("wrong input");
+            addNewItem();
+        }
+    });
+}
 function main() {
     inquirer.prompt({
         type: "list",

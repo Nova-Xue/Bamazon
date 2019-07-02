@@ -18,6 +18,17 @@ function viewSale(){
         }
     });
 }
+function viewLowInventory(){
+    connection.query("select *from products where stock_quantity<5",function(err,data){
+        if (err) {
+            console.log(err);
+            
+        }
+        //data needs further format 
+        console.log(data);
+        
+    });
+}
 function main() {
     inquirer.prompt({
         type: "list",

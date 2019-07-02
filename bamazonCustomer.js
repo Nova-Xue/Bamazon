@@ -1,4 +1,5 @@
 var mysql = require("mysql");
+var table = require("table");
 require("dotenv").config();
 var inquirer = require("inquirer");
 var connection = mysql.createConnection({
@@ -80,32 +81,34 @@ function main(param) {
                                             console.log(err);
                                         }
                                         if (data.affectedRows == 1) {
-                                            console.log("success chart insert");
+                                            console.log("success add to chart");
                                         }
                                     });
                                 }
                             });
+                            //update product_sales
                             //update products
-                            connection.query("update products set stock_quantity = stock_quantity - ? where item_id = ?", [quantity,buyId], function (err, data) {
+                            connection.query("update products set stock_quantity = stock_quantity - ?,product_sales = product_sales + (price * ?) where item_id = ?", [quantity,quantity,buyId], function (err, data) {
                                 if (err) {
                                     console.log(err);
                                 }
                                 if (data.affectedRows == 1) {
                                     console.log("success update products");
                                     //show total price
+                                    //can use data base to do the math
                                     connection.query("select quantity,products.price,products.product_name from chart left join products on chart.item_id=products.item_id where user_id = ?",userId,function(err,data){
-                                        console.log("in price search");
-                                        
                                         if (err) {
                                             console.log(err);
-                                            
                                         }    
                                         let subtotal = 0;
+                                        console.log("Your chart :");
+                                        let dataArr = [["name","price","quantity","total"]];
                                         for (let index = 0; index < data.length; index++) {
-                                                console.log(data[index].product_name + "||"+data[index].quantity+"||"+data[index].quantity*data[index].price);
+                                                dataArr.push([data[index].product_name,data[index].price,data[index].quantity,data[index].quantity*data[index].price]);
                                                 subtotal += data[index].quantity*data[index].price;
                                             }
-                                        console.log("subtotal : " +subtotal.toFixed(2));
+                                        dataArr.push(["","","subtotal",subtotal]);
+                                        console.log(table.table(dataArr));
                                         
                                             main(param);
                                     });

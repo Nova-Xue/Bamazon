@@ -14,10 +14,10 @@ function view(){
 // from 
 // departments 
 // inner join 
-// (select department_name,sum(department_name) as product_sales from products group by department_name) as sales
+// (select department_name,sum(product_sales) as product_sales from products group by department_name) as sales
 // on sales.department_name = departments.department_name;
 var querySQL = "select *,(sales.product_sales-departments.over_head_costs) as total_profit from departments ";
-querySQL += "inner join "+"(select department_name,sum(department_name) as product_sales from products group by department_name) as sales ";
+querySQL += "inner join "+"(select department_name,sum(product_sales) as product_sales from products group by department_name) as sales ";
 querySQL += "on sales.department_name = departments.department_name;"
     connection.query(querySQL,function(err,data){
         if (err) {
@@ -60,7 +60,7 @@ function addDepartment(){
                     
                 }
                 if (data.affectedRows ==1) {
-                    console.log("add success");
+                    console.log("add department success");
                     main();
                     
                 }

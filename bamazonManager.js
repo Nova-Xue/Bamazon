@@ -1,4 +1,5 @@
 var mysql = require("mysql");
+var table = require("table");
 require("dotenv").config();
 var inquirer = require("inquirer");
 var connection = mysql.createConnection({
@@ -8,123 +9,130 @@ var connection = mysql.createConnection({
     port: 3306,
     database: "bamazon"
 });
-function viewSale(){
-    connection.query("select item_id,product_name,price,stock_quantity from products where stock_quantity > 0",function(err,data){
+function viewSale() {
+    connection.query("select item_id,product_name,price,stock_quantity from products where stock_quantity > 0", function (err, data) {
         if (err) {
             console.log(err);
         }
+        let dataArr = [["id", "name", "price", "quantity"]];
         for (let index = 0; index < data.length; index++) {
-            console.log(data[index]);
+            dataArr.push([data[index].item_id, data[index].product_name, data[index].price, data[index].stock_quantity]);
         }
+        console.log(table.table(dataArr));
+
         main();
     });
 }
-function viewLowInventory(){
-    connection.query("select *from products where stock_quantity<5",function(err,data){
+function viewLowInventory() {
+    connection.query("select *from products where stock_quantity<5", function (err, data) {
         if (err) {
             console.log(err);
-            
+
         }
         //data needs further format 
-        if(data.length==0){
+        if (data.length == 0) {
             console.log("everything enough");
-            
-        }else{
-            console.log(data);
+
+        } else {
+            let dataArr = [["id", "name", "price", "quantity"]];
+            for (let index = 0; index < data.length; index++) {
+                dataArr.push([data[index].item_id, data[index].product_name, data[index].price, data[index].stock_quantity]);
+            }
+            console.log(table.table(dataArr));
         }
         main();
-        
+
     });
 }
-function addInventory(){
-    connection.query("select *from products",function(err,data){
+function addInventory() {
+    connection.query("select *from products", function (err, data) {
         if (err) {
             console.log(err);
-            
+
         }
         let newArr = [];
         for (let index = 0; index < data.length; index++) {
-            
-            newArr.push(data[index].item_id+"."+data[index].product_name+"||"+data[index].stock_quantity);
+
+            newArr.push(data[index].item_id + "." + data[index].product_name + "||" + data[index].stock_quantity);
 
         }
         console.log(newArr);
-        
+
 
         inquirer.prompt([{
-            type : "list",
-            name : "item",
-            message : "Choose an item to add",
-            choices : newArr
-        },{
-            type : "input",
-            name : "add",
-            message : "How many?",
-            default : 1
-        }]).then(answers=>{
-            if(parseInt(answers.add)== NaN || parseInt(answers.add)<=0){
+            type: "list",
+            name: "item",
+            message: "Choose an item to add",
+            choices: newArr
+        }, {
+            type: "input",
+            name: "add",
+            message: "How many?",
+            default: 1
+        }]).then(answers => {
+            if (parseInt(answers.add) == NaN || parseInt(answers.add) <= 0) {
                 console.log("wrong input");
                 addInventory();
-            }else{
-                let addId = answers.item.substring(0,answers.item.indexOf("."));
+            } else {
+                let addId = answers.item.substring(0, answers.item.indexOf("."));
                 let addNum = parseInt(answers.add);
-                connection.query("update products set stock_quantity = stock_quantity + ? where item_id = ?",[addNum,addId],function(err,data){
+                connection.query("update products set stock_quantity = stock_quantity + ? where item_id = ?", [addNum, addId], function (err, data) {
                     if (err) {
                         console.log(err);
-                        
+
                     }
-                    if(data.affectedRows == 1){
-                        console.log("add success");
+                    if (data.affectedRows == 1) {
+                        console.log("add inventory success");
                         main();
                     }
                 })
-                
+
             }
         });
     });
 }
-function addNewItem(){
+function addNewItem() {
     inquirer.prompt([{
-        type : "input",
-        name : "name",
-        message : "Product name?"
-    },{
-        type : "input",
-        name : "department",
-        message : "Department?",
+        type: "input",
+        name: "name",
+        message: "Product name?"
+    }, {
+        type: "input",
+        name: "department",
+        message: "Department?",
 
-    },{
-        type : "input",
-        name : "price",
-        message : "Price?",
+    }, {
+        type: "input",
+        name: "price",
+        message: "Price?",
 
 
-    },{
-        type : "input",
-        name : "quantity",
-        message : "How many?"
-    }]).then(answers=>{
+    }, {
+        type: "input",
+        name: "quantity",
+        message: "How many?"
+    }]).then(answers => {
         //should have more validation
         //don't want to do it 
-        if(answers.name != "" && answers.department != "" && answers.price != ""&& answers.quantity != ""){
-           //should check data base before insert 
-            connection.query("insert into products set ?",{
-                product_name : answers.name,
-                department_name : answers.department,
-                price : answers.price,
-                stock_quantity : answers.quantity
-            },function(err,data){
+        if (answers.name != "" && answers.department != "" && answers.price != "" && answers.quantity != "") {
+            //should check data base before insert 
+            connection.query("insert into products set ?", {
+                product_name: answers.name,
+                department_name: answers.department,
+                price: answers.price,
+                stock_quantity: answers.quantity
+            }, function (err, data) {
                 if (err) {
                     console.log(err);
-                    
+
                 }
-              if (data.affectedRows ==1) {
-                  console.log("add item success");
-                  main();
-              }
-               
+                if (data.affectedRows == 1) {
+                    console.log("add item success");
+                    main();
+                }
+
             });
-        }else{
+        } else {
             console.log("wrong input");
             addNewItem();
         }
@@ -144,7 +152,7 @@ function main() {
             case "Add to Inventory":
                 addInventory();
                 break;
-            case "View Low Inventory":
+            case "View Low Inventory (quantity less than 5)":
                 viewLowInventory();
                 break;
             case "Add New Product":

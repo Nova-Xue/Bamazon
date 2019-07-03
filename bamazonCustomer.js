@@ -15,13 +15,14 @@ connection.query("select item_id, product_name, price from products", function (
     if (err) {
         console.log(err);
     }
+    let dataArr = [["id","name","price"]];
     let arr = [];
     console.log("Here are our products");
     for (let index = 0; index < data.length; index++) {
-        console.log(data[index].item_id + "|" + data[index].product_name + "|" + data[index].price + "$");
-        arr.push(data[index].item_id + "." + data[index].product_name);
-        console.log("-----------------------------------------------");
+        dataArr.push([data[index].item_id,data[index].product_name,data[index].price.toFixed(2)]);
+        arr.push(data[index].item_id+"."+data[index].product_name);
     }
+    console.log(table.table(dataArr));
     main(arr);
 });
 function main(param) {

@@ -10,12 +10,6 @@ var connection = mysql.createConnection({
     database: "bamazon"
 });
 function view(){
-//     select *,(sales.product_sales-departments.over_head_costs) as total_profit 
-// from 
-// departments 
-// left join 
-// (select department_name,sum(product_sales) as product_sales from products group by department_name) as sales
-// on sales.department_name = departments.department_name;
 var querySQL = "select sales.product_sales,departments.over_head_costs,departments.department_name,departments.department_id,(sales.product_sales-departments.over_head_costs) as total_profit from departments ";
 querySQL += "left join "+"(select department_name,sum(product_sales) as product_sales from products group by department_name) as sales ";
 querySQL += "on sales.department_name = departments.department_name;"
